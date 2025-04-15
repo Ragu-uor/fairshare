@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Shares</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">User  Shares</h1>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Share Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for username, share in shares.items() %}
+                <tr>
+                    <td>{{ username }}</td>
+                    <td>
+                        <ul>
+                            {% for share_type, amount in share.items() %}
+                            <li>{{ share_type }}: £{{ amount }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('generate_share') }}" class="btn btn-primary">Back to Form</a>
+    </div>
+</body>
+</html>

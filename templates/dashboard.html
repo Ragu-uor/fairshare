@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Welcome, {{ username }}!</h1>
+
+    {% if admin %}
+    <a href="{{ url_for('add_expense_route') }}">Add Expense</a>
+    <a href="{{ url_for('view_expense_route') }}">Edit Expense</a>
+    <a href="{{ url_for('assign_task_route') }}">Assign Task</a>
+    <a href="{{ url_for('generate_share') }}">Generate Share</a>
+    {% endif %}
+
+    <h2>Your Expenses</h2>
+    <ul>
+        {% for expense in expenses %}
+            <li>You spent £{{ expense.expense_amount }} on {{ expense.expense_type }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Tasks Assigned to You</h2>
+    <ul>
+        {% for task in tasks %}
+            <li>{{ task.task_summary }} - Due: {{ task.task_due_date }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

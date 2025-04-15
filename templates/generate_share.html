@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Share</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+        }
+        input[type="text"], input[type="number"], input[type="date"], input[type="checkbox"] {
+            width: 100%;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Generate Share for Users</h1>
+    <form method="POST">
+        <table>
+            <thead>
+                <tr>
+                    <th>User Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Exclude Grocery</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <input type="hidden" name="user_name_{{ loop.index0 }}" value="{{ user['user_name'] }}">
+                        <strong>{{ user['user_name'] }}</strong>
+                    </td>
+                    <td>
+                        <input type="date" id="start_date_{{ loop.index0 }}" name="start_date_{{ loop.index0 }}" required>
+                    </td>
+                    <td>
+                        <input type="date" id="end_date_{{ loop.index0 }}" name="end_date_{{ loop.index0 }}" required>
+                    </td>
+                    <td>
+                        <input type="checkbox" id="exclude_grocery_{{ loop.index0 }}" name="exclude_grocery_{{ loop.index0 }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

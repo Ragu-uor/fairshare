@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Expense</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Add Expense</h1>
+    <form action="{{ url_for('add_expense_route') }}" method="POST">
+        <label>Category:</label>
+        <select name="category">
+            <option value="Electricity">Electricity</option>
+            <option value="Gas">Gas</option>
+            <option value="Cooking">Cooking</option>
+            <option value="Others">Others</option>
+        </select>
+        <br>
+
+        <label>Amount:</label>
+        <input type="text" name="amount" required>
+        <br>
+
+        {% if admin %}
+        <label>Assign Expense To:</label>
+        <select name="person">
+            {% for user in users.keys() %}
+                <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+        </select>
+        {% else %}
+        <input type="hidden" name="person" value="{{ session['username'] }}">
+        {% endif %}
+        <br>
+
+        <label>Exclude from Food Expenses:</label>
+        <!-- <input type="checkbox" name="exclude_food"><br> -->
+
+        <button type="submit">Add</button>
+    </form>
+</body>
+</html>
