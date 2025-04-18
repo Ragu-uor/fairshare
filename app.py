@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from datetime import datetime
+import bcrypt
 from expenses import expenses_data, add_expense, calculate_monthly_expenses, add_rent
 from tasks import tasks_data, assign_task
 from users import users, check_user, is_admin
-from models import get_user_id, add_expenses, add_task, get_all_users, expense_type_total
+from models import get_user_id, add_expenses, add_task, get_all_users, expense_type_total, add_user, authenticate_user
 from models import get_user_expenses, get_user_tasks, get_all_expenses, update_expense, remove_expense
 from calculation import calculate_shares
 
@@ -16,22 +17,63 @@ def index():
     return redirect(url_for('login'))  
 
 # Login Route
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+
+#         if check_user(username, password):
+#             session['username'] = username
+#             session['role'] = users[username]['role']  # Store user role
+#             flash("Login successful!", "success")
+#             return redirect(url_for('dashboard'))
+#         else:
+#             flash("Invalid login credentials!", "danger")
+
+#     return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        email = request.form['user_mail']
+        username = request.form['user_name']
+        password = request.form['password']
+        # Check if the checkbox for is_admin is checked
+        is_admin = request.form.get('is_admin') == 'on'  # This will be True if checked, False if not
+
+        # Call the add_user function to insert the user into the database
+        if add_user(email, username, password, is_admin):
+            flash("Registration successful. Please log in.", "success")
+            return redirect(url_for('login'))
+        else:
+            flash("Registration failed. Please try again.", "danger")
+    
+    return render_template('signup.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        email = request.form['email']
+        user = authenticate_user(email)
 
-        if check_user(username, password):
-            session['username'] = username
-            session['role'] = users[username]['role']  # Store user role
-            flash("Login successful!", "success")
-            return redirect(url_for('dashboard'))
+        if user:
+            if (request.form['password'] == user['password']):
+                print("Password is correct.")
+                # Store user information in the session
+                session['user_id'] = user['user_id']
+                session['username'] = user['user_name']
+                session['is_admin'] = user['is_admin']
+                flash("Login successful!", "success")
+                return redirect(url_for('dashboard'))
+            else:
+                print("Password is incorrect.")
         else:
-            flash("Invalid login credentials!", "danger")
+            print("User  not found.")
+
+        flash("Invalid email or password. Please try again.", "danger")
 
     return render_template('login.html')
-
 #  Logout Route
 # @app.route('/logout')
 # def logout():
@@ -47,8 +89,8 @@ def dashboard():
         return redirect(url_for('login'))
     
     username = session['username']
-    u_id = get_user_id(username)
-    admin = is_admin(username)
+    u_id = session['user_id']
+    admin = session['is_admin']
     total_expenses = calculate_monthly_expenses()
     
     return render_template(
@@ -67,23 +109,31 @@ def add_expense_route():
         return redirect(url_for('login'))
 
     username = session['username']
-    admin = is_admin(username)
+    admin = session.get('is_admin', False)
+
+    users = None if not admin else get_all_users()
 
     if request.method == 'POST':
         category = request.form['category']
         amount = float(request.form['amount'])
-        person = request.form['person'] if admin else username  # Admin can select a user
-        # exclude_food = 'exclude_food' in request.form  # Checkbox for excluding food expenses
-        u_id = get_user_id(person)
-        # add_expense(category, amount, person)
-        sts = add_expenses(u_id, category, amount)
-        if sts:
+
+        if admin:
+            person = request.form.get('person')  
+            u_id = get_user_id(person) if person and person != '-- Unassigned --' else None
+        else:
+            person = username
+            u_id = session['user_id']
+
+        status = add_expenses(u_id, category, amount)
+
+        if status:
             flash("Expense added successfully!", "success")
         else:
-            flash("Error adding expenses", "error")
+            flash("Error adding expense", "error")
         return redirect(url_for('dashboard'))
-    
+
     return render_template('add_expense.html', users=users, admin=admin)
+
 
 #  Add Rent Route (Admin Only)
 @app.route('/add_rent', methods=['GET', 'POST'])
@@ -106,7 +156,7 @@ def assign_task_route():
     # if 'username' not in session or not is_admin(session['username']):
     #     flash("Access denied!", "danger")
     #     return redirect(url_for('dashboard'))
-
+    users = get_all_users()
     if request.method == 'POST':
         task = request.form['task']
         assigned_to = request.form['assigned_to']

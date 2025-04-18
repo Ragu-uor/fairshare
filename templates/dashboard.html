@@ -8,10 +8,14 @@
     <h1>Welcome, {{ username }}!</h1>
 
     {% if admin %}
+    <!-- Admin specific links -->
     <a href="{{ url_for('add_expense_route') }}">Add Expense</a>
     <a href="{{ url_for('view_expense_route') }}">Edit Expense</a>
     <a href="{{ url_for('assign_task_route') }}">Assign Task</a>
     <a href="{{ url_for('generate_share') }}">Generate Share</a>
+    {% else %}
+    <!-- Non-admin only gets the Add Expense link -->
+    <a href="{{ url_for('add_expense_route') }}">Add Expense</a>
     {% endif %}
 
     <h2>Your Expenses</h2>

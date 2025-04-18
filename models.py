@@ -28,6 +28,62 @@ def get_user_id(user_name):
     # print(user_id['user_id']) 
     return(user_id['user_id']) 
 
+def add_user(email, username, password, is_admin):
+    connection = get_db_connection()
+    if connection is None:
+        return False  # Return False if connection fails
+
+    cursor = connection.cursor()
+    try:
+        # Define the query to insert the user data
+        query = """
+        INSERT INTO user_info (user_mail, password, user_name, is_admin) 
+        VALUES (%s, %s, %s, %s);
+        """
+
+        # Execute the query with parameters
+        cursor.execute(query, (email, password, username, is_admin))
+        
+        # Commit the transaction to save changes
+        connection.commit()  # Only call commit if execution was successful
+        return True  # Return True if insertion was successful
+
+    except Exception as e:
+        print(f"Error: {e}")
+        # If there was an error, rollback the transaction to revert changes
+        try:
+            connection.rollback()  # Rollback the transaction in case of error
+        except Exception as rollback_error:
+            print(f"Rollback failed: {rollback_error}")
+        return False  # Return False if there was an error
+
+    finally:
+        # Close the cursor and connection in the finally block to ensure they are always closed
+        cursor.close()
+        connection.close()
+
+def authenticate_user(email):
+    connection = get_db_connection()
+    if connection is None:
+        return None
+
+    cursor = connection.cursor(dictionary=True) 
+    try:
+        query = "SELECT user_id, password, user_name, is_admin FROM user_info WHERE user_mail = %s;"
+        cursor.execute(query, (email,))
+        user = cursor.fetchone()
+
+        return user  # Already a dictionary now, no need to map manually
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+    finally:
+        cursor.close()
+        connection.close()
+   
+
 def add_expenses(user_id, category, amount):
     connection = get_db_connection()
     if connection is None:
@@ -247,8 +303,8 @@ def remove_expense(expense_id):
 
 
 
-u_e = get_all_expenses()
-print(u_e)
+# u_e = get_all_expenses()
+# print(u_e)
 
 
 

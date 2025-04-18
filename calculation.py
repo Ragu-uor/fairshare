@@ -40,15 +40,16 @@ def calculate_shares(users, expenses):
         # electricity_share = expenses['electricity'] / len(users)
         # gas_share = expenses['gas'] / len(users)
         user_already_spent = sum_user_expense(u_id, mnth)
+        user_spent = float(user_already_spent[0]) if user_already_spent[0] is not None else 0.0
 
         # Total share for the user
-        total_share = rent_share + grocery_share + electricity_share + gas_share - float(user_already_spent[0])
+        total_share = rent_share + grocery_share + electricity_share + gas_share - user_spent
         shares[user['username']] = {
             'Rent share': round(rent_share, 2),
             'Grocery share': round(grocery_share, 2),
             'Electricity share': round(electricity_share, 2),
             'Gas share': round(gas_share, 2),
-            'Already spent': round(float(user_already_spent[0]), 2),
+            'Already spent': round(float(user_spent), 2),
             'Total share': round(total_share, 2)
         }
 
